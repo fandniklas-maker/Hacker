@@ -1,0 +1,226 @@
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "NotrufHamburgAdminGUI"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Visible = false
+
+local function createToggle(name, posY)
+    local label = Instance.new("TextLabel", frame)
+    label.Text = name
+    label.Size = UDim2.new(0, 150, 0, 30)
+    label.Position = UDim2.new(0, 10, 0, posY)
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local button = Instance.new("TextButton", frame)
+    button.Text = "Off"
+    button.Size = UDim2.new(0, 100, 0, 30)
+    button.Position = UDim2.new(0, 160, 0, posY)
+    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    button.TextColor3 = Color3.new(1, 1, 1)
+
+    return button
+end
+
+local invisToggle = createToggle("Unsichtbar machen", 10)
+local moneyToggle = createToggle("Unendlich Money", 50)
+local flyToggle = createToggle("Fly Hack", 90)
+local rainbowCarToggle = createToggle("Regenbogen Auto", 130)
+local aimbotToggle = createToggle("Aimbot", 170)
+
+-- Variables
+local invisActive = false
+local moneyActive = false
+local flyActive = false
+local rainbowCarActive = false
+local aimbotActive = false
+
+-- Invisible toggle
+invisToggle.MouseButton1Click:Connect(function()
+    invisActive = not invisActive
+    invisToggle.Text = invisActive and "On" or "Off"
+    if invisActive then
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 1
+                if part:FindFirstChildOfClass("Decal") then
+                    for _, decal in pairs(part:GetChildren()) do
+                        if decal:IsA("Decal") then
+                            decal.Transparency = 1
+                        end
+                    end
+                end
+            end
+        end
+    else
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+                if part:FindFirstChildOfClass("Decal") then
+                    for _, decal in pairs(part:GetChildren()) do
+                        if decal:IsA("Decal") then
+                            decal.Transparency = 0
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Money toggle (set money to a high value continuously)
+moneyToggle.MouseButton1Click:Connect(function()
+    moneyActive = not moneyActive
+    moneyToggle.Text = moneyActive and "On" or "Off"
+end)
+
+-- Fly hack variables
+local flySpeed = 50
+local bodyVelocity
+
+flyToggle.MouseButton1Click:Connect(function()
+    flyActive = not flyActive
+    flyToggle.Text = flyActive and "On" or "Off"
+    if flyActive then
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            bodyVelocity = Instance.new("BodyVelocity", hrp)
+            bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        end
+    else
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+    end
+end)
+
+-- Rainbow Car toggle
+rainbowCarToggle.MouseButton1Click:Connect(function()
+    rainbowCarActive = not rainbowCarActive
+    rainbowCarToggle.Text = rainbowCarActive and "On" or "Off"
+end)
+
+-- Aimbot toggle
+aimbotToggle.MouseButton1Click:Connect(function()
+    aimbotActive = not aimbotActive
+    aimbotToggle.Text = aimbotActive and "On" or "Off"
+end)
+
+-- Fly control
+RunService.RenderStepped:Connect(function()
+    if flyActive and bodyVelocity and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = player.Character.HumanoidRootPart
+        local direction = Vector3.new(0, 0, 0)
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            direction = direction + (workspace.CurrentCamera.CFrame.LookVector)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            direction = direction - (workspace.CurrentCamera.CFrame.LookVector)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            direction = direction - (workspace.CurrentCamera.CFrame.RightVector)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            direction = direction + (workspace.CurrentCamera.CFrame.RightVector)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            direction = direction + Vector3.new(0, 1, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            direction = direction - Vector3.new(0, 1, 0)
+        end
+        bodyVelocity.Velocity = direction.Unit * flySpeed
+        if direction.Magnitude == 0 then
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        end
+    end
+end)
+
+-- Rainbow Car effect
+local function rainbowColor(tick)
+    local frequency = 0.3
+    local r = math.sin(frequency * tick + 0) * 127 + 128
+    local g = math.sin(frequency * tick + 2) * 127 + 128
+    local b = math.sin(frequency * tick + 4) * 127 + 128
+    return Color3.fromRGB(r, g, b)
+end
+
+RunService.Heartbeat:Connect(function(step)
+    if rainbowCarActive then
+        local car = workspace:FindFirstChild("Car") or workspace:FindFirstChildWhichIsA("Model")
+        if car then
+            for _, part in pairs(car:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Color = rainbowColor(tick())
+                end
+            end
+        end
+    end
+end)
+
+-- Aimbot logic
+local function getClosestTarget()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    local camera = workspace.CurrentCamera
+    for _, target in pairs(Players:GetPlayers()) do
+        if target ~= player and target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0 then
+            local head = target.Character:FindFirstChild("Head")
+            if head then
+                local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+                    if dist < shortestDistance then
+                        shortestDistance = dist
+                        closestPlayer = target
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+RunService.RenderStepped:Connect(function()
+    if aimbotActive then
+        local target = getClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local headPos = target.Character.Head.Position
+            local camera = workspace.CurrentCamera
+            camera.CFrame = CFrame.new(camera.CFrame.Position, headPos)
+        end
+    end
+end)
+
+-- Money hack (set money to 999999 continuously)
+RunService.Heartbeat:Connect(function()
+    if moneyActive then
+        local leaderstats = player:FindFirstChild("leaderstats")
+        if leaderstats then
+            local money = leaderstats:FindFirstChild("Money") or leaderstats:FindFirstChild("money")
+            if money and money:IsA("IntValue") or money:IsA("NumberValue") then
+                money.Value = 999999
+            end
+        end
+    end
+end)
+
+-- Toggle GUI visibility with key "Trixo"
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.T then
+            if UserInputService:IsKeyDown(Enum.KeyCode.R) and UserInputService:IsKeyDown(Enum.KeyCode.I) and UserInputService:Is
