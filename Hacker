@@ -41,17 +41,17 @@ local MainTab = Window:CreateTab("Home", nil) -- Title, Image
 local MainSection = Tab:MainTab("Main")
 
 Rayfield: Notify({
-Title = "Notification nice",
-Content = "Notification good",
-Duration = 5,
-Image = nil,
-Actions = (-- Notification Buttons
-Ignore = (
-Name = "Okay!",
-Callback = function()
-print("The user tapped Okay!")
-end
-},
+ Title = "Notification nice",
+ Content = "Notification good",
+ Duration = 5,
+ Image = nil,
+ Actions = (-- Notification Buttons
+    Ignore = (
+       Name = "Okay!",
+       Callback = function()
+       print("The user tapped Okay!")
+    end
+ },
 },
 })
 
